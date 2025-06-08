@@ -15,7 +15,7 @@ module.exports = {
     open: true,
     hot: true,
   },
-  plugins: [new HtmlWebpackPlugin({ template: "./src/html/template.html" })],
+  plugins: [new HtmlWebpackPlugin({ template: "./src/index.html" })],
   module: {
     rules: [
       {
