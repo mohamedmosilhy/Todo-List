@@ -6,9 +6,107 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>TodoVoyage</title>
         <link rel="shortcut icon" href="../assets/logo.png" type="image/x-icon">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+            rel="stylesheet">
     </head>
 
+
+
     <body>
+        <header>
+            <h1>Good Morning</h1>
+            <p class="second-text">What do you plan to do today?</p>
+        </header>
+        <aside>
+            <div class="logo">
+                <img src="../assets/logo.png" alt="logo">
+                <p class="logo-title">TodoVoyage</p>
+            </div>
+            <div class="main-menu">
+                <p class="title">main menu</p>
+                <div class="today">
+                    <img src="../assets/today.svg" alt="">
+                    <p>Today</p>
+                </div>
+                <div class="this-week">
+                    <img src="../assets/week.svg" alt="">
+                    <p>This Week</p>
+                </div>
+            </div>
+
+            <div class="projects">
+                <div class="project-title">
+                    <p class="title">Projects</p>
+                    <button class="add-project"><img src="../assets/add.svg" alt="add"></button>
+                </div>
+                <div class="content">
+                    <!-- <div class="project">
+                        <div class="project-info">
+                            <img src="../assets/project.svg" alt="icon">
+                            <p class="project-title">My day</p>
+                        </div>
+
+                        <button class="remove-project"><img src="../assets/remove.svg" alt="remove"></button>
+                    </div> -->
+                </div>
+            </div>
+        </aside>
+        <main>
+            <div class="project-title">
+                <p class="logo-title"><span class="todos-type">Today</span> Tasks</p>
+                <button class="add-todo"><img src="../assets/add.svg" alt="add">Add Todo</button>
+            </div>
+            <div class="todos">
+                <!-- <div class="todo">
+                    <label for="completed" class="checkbox-label">
+                        <input type="checkbox" name="completed" id="completed" />
+                        Mark as completed
+                    </label>
+
+                    <div class="left-todo-content">
+                        <p class="priority-label" data-priority="medium">Low</p>
+                        <p class=" date">19/5/2002</p>
+                        <button class="edit-todo"><img src="../assets/edit.svg" alt="edit"></button>
+                        <button class="remove-todo"><img src="../assets/remove.svg" alt="remove"></button>
+                    </div>
+                </div> -->
+            </div>
+        </main>
+        <dialog id="todoDialog">
+            <form method="dialog" id="todoForm">
+                <h3 class="dialog-title">Add New Todo</h3>
+
+                <input type="text" name="title" placeholder="Title" required class="dialog-input" />
+                <textarea name="description" placeholder="Description" rows="3" class="dialog-input"></textarea>
+                <input type="date" name="dueDate" required class="dialog-input" />
+                <select name="priority" required class="dialog-input">
+                    <option value="" disabled selected>Priority</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+
+                <div class="dialog-buttons">
+                    <button type="submit" class="dialog-add">Add</button>
+                    <button type="reset" class="dialog-cancel">Cancel</button>
+                </div>
+            </form>
+        </dialog>
+
+        <dialog id="projectDialog">
+            <form method="dialog" id="projectForm">
+                <h3 class="dialog-title">Add New Project</h3>
+                <input type="text" id="projectName" name="projectName" placeholder="Enter project name" required
+                    class="dialog-input" />
+                <div class="dialog-buttons">
+                    <button type="submit" class="dialog-add">Add</button>
+                    <button type="reset" class="dialog-cancel">Cancel</button>
+                </div>
+            </form>
+        </dialog>
 
     </body>
 
