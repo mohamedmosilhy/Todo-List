@@ -3,8 +3,8 @@ import { Project } from "../models/Project";
 import { Todo } from "../models/Todo";
 
 export class Controller {
-  constructor(data) {
-    this.projects = data || [];
+  constructor() {
+    this.projects = loadData() || [];
     this.activeProject = this.projects[0];
   }
 
