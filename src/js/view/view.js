@@ -121,6 +121,7 @@ export class View {
       this.setActive(todayBtn);
       todosType.textContent = "Today";
       const todos = this._getFilteredTodos(isToday);
+      document.querySelector(".add-todo").style.display = "none";
       this.clearTodos();
       this.renderSpecificTodos(todos);
     };
@@ -131,6 +132,7 @@ export class View {
       const todos = this._getFilteredTodos((date) =>
         isThisWeek(date, { weekStartsOn: 1 })
       );
+      document.querySelector(".add-todo").style.display = "none";
       this.clearTodos();
       this.renderSpecificTodos(todos);
     };
@@ -138,7 +140,9 @@ export class View {
 
   _getFilteredTodos(filterFn) {
     return this.controller.projects.flatMap((project) =>
-      project.todos.filter((todo) => filterFn(parseISO(todo.dueDate)))
+      project.todos
+        .filter((todo) => filterFn(parseISO(todo.dueDate)))
+        .map((todo) => ({ ...todo, projectName: project.name }))
     );
   }
 
@@ -156,11 +160,17 @@ export class View {
   _renderTodoList(todos) {
     const container = document.querySelector(".todos");
     todos.forEach((todo, index) =>
-      container.appendChild(this._createTodoElement(todo, index))
+      container.appendChild(
+        this._createTodoElement(
+          todo,
+          index,
+          todo.projectName || this.controller.activeProject.name
+        )
+      )
     );
   }
 
-  _createTodoElement(todo, index) {
+  _createTodoElement(todo, index, projectName) {
     const todoDiv = document.createElement("div");
     todoDiv.className = "todo";
 
@@ -180,6 +190,7 @@ export class View {
     label.append(todo.title);
 
     checkbox.onchange = () => {
+      this.controller.setActiveProject(projectName);
       this.controller.updateTodo(todo.id, { completed: !todo.completed });
     };
 
@@ -189,7 +200,7 @@ export class View {
       e.stopPropagation();
     };
 
-    // === Meta Info (Priority, Date, Edit, Remove) ===
+    // === Meta Info ===
     const left = document.createElement("div");
     left.className = "left-todo-content";
 
@@ -214,6 +225,7 @@ export class View {
       const dialog = document.querySelector("#todoDialog");
       const form = document.querySelector("#todoForm");
 
+      this.controller.setActiveProject(projectName);
       form.elements["title"].value = todo.title;
       form.elements["description"].value = todo.description || "";
       form.elements["dueDate"].value = todo.dueDate;
@@ -234,6 +246,7 @@ export class View {
 
     removeBtn.onclick = (e) => {
       e.stopPropagation();
+      this.controller.setActiveProject(projectName);
       this.controller.deleteTodo(todo.id);
       this.renderProjects();
       this.clearTodos();
@@ -269,6 +282,7 @@ export class View {
         this.setActive(div);
         this.controller.setActiveProject(project.name);
         document.querySelector(".todos-type").textContent = project.name;
+        document.querySelector(".add-todo").style.display = "flex";
         this.renderTodos();
       };
 
@@ -308,7 +322,7 @@ export class View {
     document.getElementById("detailDueDate").textContent = todo.dueDate;
     document.getElementById("detailPriority").textContent = todo.priority;
     document.getElementById("detailProject").textContent =
-      this.controller.activeProject.name;
+      todo.projectName || this.controller.activeProject.name;
 
     dialog.showModal();
     document.getElementById("closeTodoDetails").onclick = () => dialog.close();
