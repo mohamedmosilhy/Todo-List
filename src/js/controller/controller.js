@@ -11,6 +11,7 @@ export class Controller {
   createTodo(title, description, dueDate, priority, projectName) {
     const project = this.projects.find((p) => p.name === projectName);
     const todo = new Todo(title, description, dueDate, priority);
+    console.log(project);
     project.addTodo(todo);
     saveData(this.projects);
   }

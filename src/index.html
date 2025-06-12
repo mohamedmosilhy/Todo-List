@@ -51,6 +51,7 @@
                 <button class="add-todo"><img src="../assets/add.svg" alt="add">Add Todo</button>
             </div>
             <div class="todos">
+
             </div>
         </main>
         <dialog id="todoDialog">
@@ -68,8 +69,8 @@
                 </select>
 
                 <div class="dialog-buttons">
-                    <button type="submit" class="dialog-add">Add</button>
-                    <button type="reset" class="dialog-cancel">Cancel</button>
+                    <button type="submit" class="dialog-add-todo">Add</button>
+                    <button type="reset" class="dialog-cancel-todo">Cancel</button>
                 </div>
             </form>
         </dialog>
@@ -80,11 +81,24 @@
                 <input type="text" id="projectName" name="projectName" placeholder="Enter project name" required
                     class="dialog-input" />
                 <div class="dialog-buttons">
-                    <button type="submit" class="dialog-add">Add</button>
-                    <button type="reset" class="dialog-cancel">Cancel</button>
+                    <button type="submit" class="dialog-add-project">Add</button>
+                    <button type="reset" class="dialog-cancel-project">Cancel</button>
                 </div>
             </form>
         </dialog>
+
+        <dialog id="todoDetailsDialog" class="todo-details-dialog">
+            <h2>Todo Details</h2>
+            <div class="todo-details-content">
+                <p><strong>Title:</strong> <span id="detailTitle"></span></p>
+                <p><strong>Description:</strong> <span id="detailDescription"></span></p>
+                <p><strong>Due Date:</strong> <span id="detailDueDate"></span></p>
+                <p><strong>Priority:</strong> <span id="detailPriority"></span></p>
+                <p><strong>Project:</strong> <span id="detailProject"></span></p>
+            </div>
+            <button id="closeTodoDetails">Close</button>
+        </dialog>
+
 
     </body>
 

@@ -1,123 +1,316 @@
+// Import assets and utility functions
 import projectImg from "../../../assets/project.svg";
 import removeImg from "../../../assets/remove.svg";
 import editImg from "../../../assets/edit.svg";
+import { parseISO, isToday, isThisWeek } from "date-fns";
 
 export class View {
   constructor(controller) {
     this.controller = controller;
   }
 
-  renderTodos() {
-    const todoContainer = document.querySelector(".todos");
+  // === Utility ===
+  setActive(element) {
+    document
+      .querySelectorAll(".project, .today, .this-week")
+      .forEach((el) => el.classList.remove("active"));
+    element.classList.add("active");
+  }
 
-    this.controller.activeProject.todos.forEach((todo) => {
-      // Create main todo div
-      const todoDiv = document.createElement("div");
-      todoDiv.classList.add("todo");
+  clearTodos() {
+    document.querySelector(".todos").innerHTML = "";
+  }
 
-      // Create label + checkbox
-      const label = document.createElement("label");
-      label.classList.add("checkbox-label");
-      label.setAttribute("for", "completed");
-
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.name = "completed";
-      checkbox.id = "completed";
-
-      label.appendChild(checkbox);
-      label.appendChild(document.createTextNode(todo.title));
-
-      // Create left content container
-      const leftContent = document.createElement("div");
-      leftContent.classList.add("left-todo-content");
-
-      const priorityLabel = document.createElement("p");
-      priorityLabel.classList.add("priority-label");
-      priorityLabel.dataset.priority = todo.priority;
-      priorityLabel.textContent = todo.priority;
-
-      const dateText = document.createElement("p");
-      dateText.classList.add("date");
-      dateText.textContent = todo.dueDate;
-
-      const editBtn = document.createElement("button");
-      editBtn.classList.add("edit-todo");
-
-      const editIcon = document.createElement("img");
-      editIcon.src = editImg;
-      editIcon.alt = "edit";
-      editBtn.appendChild(editIcon);
-
-      const removeBtn = document.createElement("button");
-      removeBtn.classList.add("remove-todo");
-
-      const removeIcon = document.createElement("img");
-      removeIcon.src = removeImg;
-      removeIcon.alt = "remove";
-      removeBtn.appendChild(removeIcon);
-
-      // Assemble left content
-      leftContent.appendChild(priorityLabel);
-      leftContent.appendChild(dateText);
-      leftContent.appendChild(editBtn);
-      leftContent.appendChild(removeBtn);
-
-      // Combine and append to DOM
-      todoDiv.appendChild(label);
-      todoDiv.appendChild(leftContent);
-      todoContainer.appendChild(todoDiv);
-    });
+  // === Initialization ===
+  renderMainSection() {
+    this._setupTodoDialogEvents();
+    this.renderTodos();
   }
 
   renderProjectsAndMainMenu() {
-    const projectsContainer = document.querySelector(".content");
-    const today = document.querySelector(".today");
-    const thisWeek = document.querySelector(".this-week");
+    this._setupProjectDialogEvents();
+    this._setupMainMenuEvents();
+    this.renderProjects();
+  }
 
-    today.addEventListener("click", (e) => {
-      // render the todos at this day from all projects
-    });
-    thisWeek.addEventListener("click", (e) => {
-      // render the todos at this week only from all projects
-    });
+  // === Todo Dialog Logic ===
+  _setupTodoDialogEvents() {
+    const dialog = document.querySelector("#todoDialog");
+    const form = document.querySelector("#todoForm");
+    const addBtn = document.querySelector(".dialog-add-todo");
+    const cancelBtn = document.querySelector(".dialog-cancel-todo");
+
+    document.querySelector(".add-todo").onclick = () => {
+      form.reset();
+      form.dataset.mode = "add";
+      delete form.dataset.todoId;
+      dialog.showModal();
+    };
+
+    addBtn.onclick = (e) => {
+      e.preventDefault();
+      const data = new FormData(form);
+      const title = data.get("title").trim();
+      const description = data.get("description").trim();
+      const dueDate = data.get("dueDate");
+      const priority = data.get("priority");
+
+      if (!title || !dueDate || !priority) return;
+
+      if (form.dataset.mode === "edit") {
+        this.controller.updateTodo(form.dataset.todoId, {
+          title,
+          description,
+          dueDate,
+          priority,
+        });
+      } else {
+        this.controller.createTodo(
+          title,
+          description,
+          dueDate,
+          priority,
+          this.controller.activeProject.name
+        );
+      }
+
+      form.reset();
+      dialog.close();
+      this.renderTodos();
+    };
+
+    cancelBtn.onclick = (e) => {
+      e.preventDefault();
+      form.reset();
+      dialog.close();
+    };
+  }
+
+  // === Project Dialog Logic ===
+  _setupProjectDialogEvents() {
+    const dialog = document.querySelector("#projectDialog");
+    const input = document.querySelector("#projectName");
+
+    document.querySelector(".add-project").onclick = () => dialog.showModal();
+
+    document.querySelector(".dialog-add-project").onclick = (e) => {
+      e.preventDefault();
+      const name = input.value.trim();
+      if (!name) return;
+
+      this.controller.createProject(name);
+      input.value = "";
+      dialog.close();
+      this.renderProjects();
+    };
+
+    document.querySelector(".dialog-cancel-project").onclick = (e) => {
+      e.preventDefault();
+      input.value = "";
+      dialog.close();
+    };
+  }
+
+  // === Main Menu Filtering ===
+  _setupMainMenuEvents() {
+    const todayBtn = document.querySelector(".today");
+    const thisWeekBtn = document.querySelector(".this-week");
+    const todosType = document.querySelector(".todos-type");
+
+    todayBtn.onclick = () => {
+      this.setActive(todayBtn);
+      todosType.textContent = "Today";
+      const todos = this._getFilteredTodos(isToday);
+      this.clearTodos();
+      this.renderSpecificTodos(todos);
+    };
+
+    thisWeekBtn.onclick = () => {
+      this.setActive(thisWeekBtn);
+      todosType.textContent = "This Week";
+      const todos = this._getFilteredTodos((date) =>
+        isThisWeek(date, { weekStartsOn: 1 })
+      );
+      this.clearTodos();
+      this.renderSpecificTodos(todos);
+    };
+  }
+
+  _getFilteredTodos(filterFn) {
+    return this.controller.projects.flatMap((project) =>
+      project.todos.filter((todo) => filterFn(parseISO(todo.dueDate)))
+    );
+  }
+
+  // === Todo Rendering ===
+  renderTodos() {
+    this.clearTodos();
+    this._renderTodoList(this.controller.activeProject.todos);
+  }
+
+  renderSpecificTodos(todos) {
+    this.clearTodos();
+    this._renderTodoList(todos);
+  }
+
+  _renderTodoList(todos) {
+    const container = document.querySelector(".todos");
+    todos.forEach((todo, index) =>
+      container.appendChild(this._createTodoElement(todo, index))
+    );
+  }
+
+  _createTodoElement(todo, index) {
+    const todoDiv = document.createElement("div");
+    todoDiv.className = "todo";
+
+    // === Checkbox ===
+    const label = document.createElement("label");
+    label.className = "checkbox-label";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "completed";
+    checkbox.checked = !!todo.completed;
+
+    const id = `todo-${index}-${Math.random().toString(36).substr(2, 5)}`;
+    checkbox.id = id;
+    label.setAttribute("for", id);
+    label.appendChild(checkbox);
+    label.append(todo.title);
+
+    checkbox.onchange = () => {
+      this.controller.updateTodo(todo.id, { completed: !todo.completed });
+    };
+
+    label.onclick = (e) => e.stopPropagation();
+    todoDiv.onclick = (e) => {
+      this.showTodoDetails(todo);
+      e.stopPropagation();
+    };
+
+    // === Meta Info (Priority, Date, Edit, Remove) ===
+    const left = document.createElement("div");
+    left.className = "left-todo-content";
+
+    const priority = document.createElement("p");
+    priority.className = "priority-label";
+    priority.dataset.priority = todo.priority;
+    priority.textContent = todo.priority;
+
+    const date = document.createElement("p");
+    date.className = "date";
+    date.textContent = todo.dueDate;
+
+    const editBtn = document.createElement("button");
+    editBtn.className = "edit-todo";
+    const editIcon = document.createElement("img");
+    editIcon.src = editImg;
+    editIcon.alt = "edit";
+    editBtn.appendChild(editIcon);
+
+    editBtn.onclick = (e) => {
+      e.stopPropagation();
+      const dialog = document.querySelector("#todoDialog");
+      const form = document.querySelector("#todoForm");
+
+      form.elements["title"].value = todo.title;
+      form.elements["description"].value = todo.description || "";
+      form.elements["dueDate"].value = todo.dueDate;
+      form.elements["priority"].value = todo.priority;
+
+      form.dataset.mode = "edit";
+      form.dataset.todoId = todo.id;
+
+      dialog.showModal();
+    };
+
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "remove-todo";
+    const removeIcon = document.createElement("img");
+    removeIcon.src = removeImg;
+    removeIcon.alt = "remove";
+    removeBtn.appendChild(removeIcon);
+
+    removeBtn.onclick = (e) => {
+      e.stopPropagation();
+      this.controller.deleteTodo(todo.id);
+      this.renderProjects();
+      this.clearTodos();
+      this.renderTodos();
+    };
+
+    [priority, date, editBtn, removeBtn].forEach((el) => left.appendChild(el));
+    todoDiv.append(label, left);
+    return todoDiv;
+  }
+
+  // === Project Rendering ===
+  renderProjects() {
+    const container = document.querySelector(".content");
+    container.innerHTML = "";
 
     this.controller.projects.forEach((project) => {
-      // Create main project div
-      const projectDiv = document.createElement("div");
-      projectDiv.classList.add("project");
+      const div = document.createElement("div");
+      div.className = "project";
 
-      // Create project info section
-      const projectInfo = document.createElement("div");
-      projectInfo.classList.add("project-info");
+      const info = document.createElement("div");
+      info.className = "project-info";
 
       const icon = document.createElement("img");
       icon.src = projectImg;
       icon.alt = "icon";
 
-      const projectTitle = document.createElement("p");
-      projectTitle.classList.add("project-title");
-      projectTitle.textContent = project.name;
+      const title = document.createElement("p");
+      title.className = "project-title";
+      title.textContent = project.name;
 
-      projectInfo.appendChild(icon);
-      projectInfo.appendChild(projectTitle);
+      div.onclick = () => {
+        this.setActive(div);
+        this.controller.setActiveProject(project.name);
+        document.querySelector(".todos-type").textContent = project.name;
+        this.renderTodos();
+      };
 
-      // Create remove button
-      const removeButton = document.createElement("button");
-      removeButton.classList.add("remove-project");
-
+      const removeBtn = document.createElement("button");
+      removeBtn.className = "remove-project";
       const removeIcon = document.createElement("img");
       removeIcon.src = removeImg;
       removeIcon.alt = "remove";
+      removeBtn.appendChild(removeIcon);
 
-      removeButton.appendChild(removeIcon);
+      removeBtn.onclick = (e) => {
+        e.stopPropagation();
+        const wasActive = this.controller.activeProject?.name === project.name;
+        this.controller.deleteProject(project.name);
 
-      // Append all to main project div
-      projectDiv.appendChild(projectInfo);
-      projectDiv.appendChild(removeButton);
+        if (wasActive && this.controller.projects.length > 0) {
+          this.controller.setActiveProject(this.controller.projects[0].name);
+        }
 
-      // Add to the DOM
-      projectsContainer.appendChild(projectDiv);
+        this.renderProjects();
+        this.clearTodos();
+        this.renderTodos();
+      };
+
+      info.append(icon, title);
+      div.append(info, removeBtn);
+      container.appendChild(div);
     });
+  }
+
+  // === Todo Details Modal ===
+  showTodoDetails(todo) {
+    const dialog = document.getElementById("todoDetailsDialog");
+    document.getElementById("detailTitle").textContent = todo.title;
+    document.getElementById("detailDescription").textContent =
+      todo.description || "No description";
+    document.getElementById("detailDueDate").textContent = todo.dueDate;
+    document.getElementById("detailPriority").textContent = todo.priority;
+    document.getElementById("detailProject").textContent =
+      this.controller.activeProject.name;
+
+    dialog.showModal();
+    document.getElementById("closeTodoDetails").onclick = () => dialog.close();
   }
 }

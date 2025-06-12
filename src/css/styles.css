@@ -144,12 +144,13 @@ h1 {
 }
 
 .today:hover,
-.this-week:hover {
+.this-week:hover,
+.project:hover {
   background-color: var(--color-bg);
   transform: translateX(1rem);
 }
 
-.project:hover {
+.active {
   background-color: var(--color-bg);
   transform: translateX(1rem);
 }
@@ -211,7 +212,7 @@ h1 {
   cursor: pointer;
 }
 
-#completed {
+.completed {
   width: 1.2rem;
   height: 1.2rem;
   accent-color: var(--color-primary);
@@ -254,8 +255,11 @@ dialog {
   justify-content: space-between;
 }
 
-.dialog-add,
-.dialog-cancel,
+.dialog-add-project,
+.dialog-cancel-project,
+.dialog-add-todo,
+.dialog-cancel-todo,
+#closeTodoDetails,
 .add-todo {
   padding: var(--spacing-xs) var(--spacing-md);
   border: none;
@@ -264,13 +268,14 @@ dialog {
   cursor: pointer;
 }
 
-.dialog-add,
+.dialog-add-project,
+.dialog-add-todo,
 .add-todo {
   background-color: var(--color-primary);
   color: white;
 }
 
-.dialog-cancel {
+.dialog-cancel-project .dialog-cancel-todo {
   background-color: #ccc;
   color: black;
 }
@@ -312,4 +317,8 @@ dialog {
 .priority-label[data-priority="high"] {
   background-color: var(--priority-high-bg);
   color: var(--priority-high-text);
+}
+
+.todo-details-content p {
+  margin: 10px 0;
 }
