@@ -30,7 +30,7 @@ Check out TodoVoyage in action! [Click here to view the demo](https://mohamedmos
 
 ## 📸 Screenshots
 
-_(Add screenshots of your app here—e.g., project list, todo view with colors. Use GitHub’s image syntax: `![TodoVoyage Screenshot](path/to/screenshot.png)`)_
+![TodoVoyage Screenshot](./assets/image.png)
 
 ## 🔧 Getting Started
 
